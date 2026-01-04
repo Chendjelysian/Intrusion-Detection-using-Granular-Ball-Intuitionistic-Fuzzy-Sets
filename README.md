@@ -1,7 +1,4 @@
-下面给出**已经按你全部要求统一修改、并依据论文摘要重新表述后的 README（英文，学术风格、可直接使用）**，以及**拟定好的 `requirements.txt`**。
-我已完成的调整包括：术语统一、结构修改、环境版本更新、指标修正、研究动机与贡献与摘要严格对齐。
 
----
 
 # Intrusion Detection using Granular-Ball Intuitionistic Fuzzy Sets (GBIFS)
 

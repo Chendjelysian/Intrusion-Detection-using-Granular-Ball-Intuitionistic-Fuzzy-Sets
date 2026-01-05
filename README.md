@@ -28,16 +28,7 @@ To address these challenges, this project implements an intrusion detection fram
 The framework constructs **Granular-Ball Intuitionistic Fuzzy Patterns (GBIFP)** that conform to the intrinsic feature distributions of IIoT data, enabling effective discrimination between normal traffic and diverse attack behaviors.
 
 > 📌 **Key Insight**
-> By combining adaptive multi-granularity representation with intuitionistic fuzzy reasoning, the GBIFS framework overcomes the limitations of radius-dependent granulation and achieves robust performance under heterogeneous and sparse data conditions.
-
----
-
-## ✨ Main Contributions
-
-* A **novel class-wise Granular-Ball generation strategy** tailored to IIoT intrusion data
-* Construction of **Granular-Ball Intuitionistic Fuzzy Patterns (GBIFP)** aligned with feature distributions
-* An **improved intuitionistic fuzzy distance metric** for accurate intrusion classification
-* Superior performance validated on both **IIoT datasets** (X-IIoTID, TON-IOT, WUSTL-IIOT) and **classical NIDS datasets** (KDDCUP99, NSL-KDD, UNSW-NB15)
+> By combining adaptive multi-granularity representation with intuitionistic fuzzy reasoning, the GBIFS framework overcomes the limitations of purity-dependent granulation and achieves robust performance under heterogeneous and sparse data conditions.
 
 ---
 
@@ -48,8 +39,9 @@ The framework constructs **Granular-Ball Intuitionistic Fuzzy Patterns (GBIFP)**
 ├── GBIFSmodel.py        # Core implementation of the GBIFS model
 ├── preprocess_data.py   # Data loading, normalization, and splitting
 ├── metric.py            # Custom metrics (e.g., Accuracy, Precision, Recall, F1_score, FPR)
-├── data/                # (Optional) Place for sample datasets or links
-└── results/             # (Ignored) Saved outputs, logs, figures
+├── data/                # Place for sample datasets or links
+├── download_data.py     # download dataset form Google Drive
+└── results/             # Saved outputs, logs, figures
 ```
 
 ---
@@ -62,10 +54,11 @@ The framework constructs **Granular-Ball Intuitionistic Fuzzy Patterns (GBIFP)**
 * **NumPy**: 1.26.4
 * **Pandas**: 2.1.4
 * **scikit-learn**: 1.3.0
+* **gdown**: 5.2.0
 
 ### Installation
 
-use the provided `requirements.txt` (see below):
+Use the provided `requirements.txt` (see below):
 
 ```bash
 pip install -r requirements.txt
@@ -73,6 +66,16 @@ pip install -r requirements.txt
 
 ### Run
 
+
+1. Download and prepare the preprocessed dataset:
+```bash
+python download_data.py
+```
+This will:
+Download the 390MB dataset from Google Drive
+Extract all files into ./data (contain six datasets)
+
+2. Run the main experiment:
 ```bash
 python GBIFSmodel.py 
 ```

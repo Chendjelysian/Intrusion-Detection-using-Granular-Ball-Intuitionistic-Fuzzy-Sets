@@ -1,52 +1,49 @@
 import numpy as np
-from sklearn.metrics import confusion_matrix, classification_report
 from sklearn.metrics import classification_report, accuracy_score
+from sklearn.metrics import confusion_matrix
+
 
 def evaluate_performance(predictions, true_labels):
-    # 转化predictions和true_labels为整数
+    # Convert predictions and true_labels to integers.
     predictions = predictions.astype(int)
     true_labels = true_labels.astype(int)
 
-    # 计算准确率
     accuracy = accuracy_score(true_labels, predictions)
 
-    # 构建混淆矩阵
     cm = confusion_matrix(true_labels, predictions)
-    # 输出混淆矩阵
-    print("混淆矩阵：")
+    # Output the confusion matrix
+
+    print("Confusion matrix:")
     print(cm)
 
-    # 初始化结果字典
+    # Initialization result dictionary
     results = {
         'accuracy': accuracy,
         'class_metrics': {},
     }
 
-    # 计算精确率、召回率和 F1 分数
     report = classification_report(true_labels, predictions, output_dict=True)
 
-    # 获取宏观平均的精确率、召回率和 F1 分数
     macro_precision = report['macro avg']['precision']
     macro_recall = report['macro avg']['recall']
     macro_f1_score = report['macro avg']['f1-score']
 
     class_labels = np.unique(np.concatenate((true_labels, predictions)))
     for label in class_labels:
-        # 从混淆矩阵中获取 TP, FP, TN, FN
+        # get  TP, FP, TN, FN
         TP = cm[label, label]
         FP = cm[:, label].sum() - TP
         FN = cm[label, :].sum() - TP
         TN = cm.sum() - (TP + FP + FN)
 
-        # 计算准确率
+
         precision = TP / (TP + FP) if (TP + FP) > 0 else 0
         recall = TP / (TP + FN) if (TP + FN) > 0 else 0
         f1_score = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0
 
-        # 计算假正率
+        # get fpr
         fpr = FP / (FP + TN) if (FP + TN) > 0 else 0
 
-        # 添加到结果字典中
         results['class_metrics'][label] = \
             {
                 'precision': round(precision, 8),
@@ -105,7 +102,6 @@ def print_meetrics(a, accuracy, macro_precision, macro_recall, macro_f1_score, r
     C1_F1_score[a] = target_metrics['f1_score']
     FPR[a] = target_metrics['fpr']
 
-    print('此时的预测准确率为：', Accuracy[a] * 100, '%')
-    # print('此时的误报警率为：', FalseAlarmRate[a] * 100, '%')
+    print('The prediction accuracy is：', Accuracy[a] * 100, '%')
     print("----------")
     return Accuracy, Precision, Recall, F1_score, C1_Recall, C1_F1_score, FPR

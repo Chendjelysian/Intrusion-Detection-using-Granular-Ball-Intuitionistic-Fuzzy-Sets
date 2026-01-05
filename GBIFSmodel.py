@@ -1,4 +1,3 @@
-import sys
 import time
 from collections import Counter
 
@@ -6,44 +5,43 @@ import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 
 from CWGB import CGB_data
-from metric import evaluate_performance,print_meetrics
+from metric import evaluate_performance, print_meetrics
 from preprocess_data import datasetload
 from preprocess_data import preprocess_data
 
 
-
 def Time_cut(data, t):
     '''
-    data数据集进行切割
+    Data dataset splitting
     '''
     data = np.array(data, dtype=np.float32)
     data_cut = np.array_split(data, t, axis=0)
-    data_cut = np.array(data_cut)  # 直接切可能用处不大，需要新的方法，至少切完不能平均
+    data_cut = np.array(data_cut)
 
     return data_cut
 
 
 def create_dynamic_if_matrix(samples, labels, n_features, data_mean):
-    """向量化优化的动态IF矩阵生成函数"""
+    """Vectorized and optimized function to generate a dynamic Intuitionistic Fuzzy matrix."""
     n_samples = samples.shape[0]
     matrix = np.zeros((n_samples, n_features, 3), dtype=np.float32)
 
-    # --- 核心优化：向量化计算所有样本的隶属度分量 ---
-    # 一次性计算所有样本与均值的差异
-    diff = samples - data_mean[None, :]  # (n_samples, n_features)
+    # --- Core optimization: Vectorized computation of membership components for all samples ---
+    # Compute differences between all samples and the feature-wise mean in one go
+    diff = samples - data_mean[None, :]  # Shape: (n_samples, n_features)
     abs_diff = np.abs(diff)
 
-    # 批量计算三个分量（消除逐样本循环）
-    membership = (1 - np.sqrt(abs_diff))  # (n_samples, n_features)
+    # Batch-compute the three intuitionistic fuzzy components (eliminates per-sample loops)
+    membership = (1 - np.sqrt(abs_diff))  # Shape: (n_samples, n_features)
     non_membership = abs_diff
     uncertainty = 1 - membership - non_membership
 
-    # 直接构造矩阵（避免逐样本拼接）
-    matrix = np.stack([membership, non_membership, uncertainty], axis=2)  # (n_samples, n_features, 3)
+    # Directly construct the IF matrix using stacking (avoids per-sample concatenation)
+    matrix = np.stack([membership, non_membership, uncertainty], axis=2)  # Shape: (n_samples, n_features, 3)
 
-    matrix_mean = np.mean(matrix, axis=0, dtype=np.float32)  # (n_features, 3)
+    matrix_mean = np.mean(matrix, axis=0, dtype=np.float32)  # Shape: (n_features, 3)
 
-    # --- 兼容原输出结构 ---
+    # --- Output structure ---
     matrix_list = [
         matrix_mean.copy(),
         np.array(labels[0], dtype=np.int64),
@@ -55,122 +53,145 @@ def create_dynamic_if_matrix(samples, labels, n_features, data_mean):
 
 def optimized_process(B_batch, X_avg_matrix, matrix_array, t):
     """
-    向量化计算批次样本的匹配分数
+    Vectorized computation of matching scores for a batch of test samples.
+
     Args:
-        B_batch: 当前批次的测试样本 (batch_size, 30)
-        X_avg_matrix: 所有粒球的中心 (GB_num, t, 30)
-        matrix_array: 所有粒球的模糊分量 (GB_num, t, 30, 3)
-        t: 时间步数
+        B_batch: Current batch of test samples, shape (batch_size, 30)
+        X_avg_matrix: Centers of all granular balls, shape (GB_num, t, 30)
+        matrix_array: Intuitionistic fuzzy components of all granular balls, shape (GB_num, t, 30, 3)
+        t: Number of time steps
+
     Returns:
-        scores: 匹配分数矩阵 (batch_size, GB_num)
+        scores: Matching score matrix, shape (batch_size, GB_num)
     """
-    # 参数初始化
-    men = 1
-    nonmen = 1
-    hes = 1
-    dim1 = 1
-    dim2 = 1
+    # Initialize weighting parameters
+    men = 1  # weight for membership degree
+    nonmen = 1  # weight for non-membership degree
+    hes = 1  # weight for hesitation (uncertainty) degree
+    dim1 = 1  # exponent for distance weighting
 
-    # 打印参数信息
-    # print(f"现在是{men}倍隶属度")
-    # print(f"现在是{nonmen}倍非隶属度")
-    # print(f"现在是{hes}倍犹豫度")
-    # print(f"对初步度量加了{dim1}次方权重")
-    # print(f"现在是{dim2}次方权重")
+    # Optional: print parameter settings (currently commented out)
+    # print(f"Membership degree scaled by factor: {men}")
+    # print(f"Non-membership degree scaled by factor: {nonmen}")
+    # print(f"Hesitation degree scaled by factor: {hes}")
+    # print(f"Distance metric raised to the power of: {dim1}")
+    # print(f"Additional weighting exponent: {dim2}")
 
-    # 扩展维度实现广播计算
+    # Expand dimensions to enable broadcasting
     # B_batch: (batch_size, 1, 1, n_features)
     # X_avg_matrix: (1, GB_num, t, n_features)
     diff = B_batch[:, None, None, :] - X_avg_matrix[None, :, :, :]  # (batch, GB, t, n_features)
     abs_diff = np.abs(diff)
 
-    # 计算模糊分量 (利用广播)
+    # Compute intuitionistic fuzzy components using broadcasting
     membership = (1 - np.sqrt(abs_diff)) * men  # (batch, GB, t, n_features)
     non_membership = abs_diff * nonmen  # (batch, GB, t, n_features)
     uncertainty = (1 - membership - non_membership) * hes  # (batch, GB, t, n_features)
 
-    # 提取粒球的参考模糊分量 (GB_num, t, 30, 3) -> 广播到 (batch, GB, t, n_features, 3)
+    # Extract reference fuzzy components from granular balls
+    # matrix_array: (GB_num, t, 30, 3) → split into three channels
     ref_mu = matrix_array[:, :, :, 0][None, :, :, :]  # (1, GB, t, n_features)
     ref_nu = matrix_array[:, :, :, 1][None, :, :, :]  # (1, GB, t, n_features)
     ref_pi = matrix_array[:, :, :, 2][None, :, :, :]  # (1, GB, t, n_features)
 
-    # 计算三个距离分量（维度对齐）
+    # Compute three distance components with aligned dimensions
     d_mu = np.abs(membership - ref_mu) ** dim1 / (1 + membership + ref_mu)  # (batch, GB, t, n_features)
     d_nu = np.abs(non_membership - ref_nu) ** dim1 / (1 + non_membership + ref_nu)
     d_pi = np.abs(uncertainty - ref_pi) ** dim1 / (1 + uncertainty + ref_pi)
 
-    # 沿特征和时间维度求平均
+    # Average over time and feature dimensions to obtain final scores
     scores = np.mean(d_mu + d_nu + d_pi, axis=(2, 3))  # (batch_size, GB_num)
     return scores
 
 
 def create_dynamic_if_matrix_test(test_samples, n_features, matrix_list_GB, t):
     """
-    创建动态 IFS 矩阵测试函数，使用并行化对样本索引进行处理
+    Constructs a dynamic Intuitionistic Fuzzy Set (IFS) matrix for test samples,
+    using batch processing to handle large datasets efficiently.
+
+    Args:
+        test_samples: Test data array of shape (n_samples, n_features)
+        n_features: Number of features per sample
+        matrix_list_GB: List of granular balls, where each entry is a list over time steps.
+                        Each time step contains [IFS_matrix (n_features, 3), label (int), center (n_features,)]
+        t: Number of time steps per granular ball
+
+    Returns:
+        results: Matching scores array of shape (n_samples, GB_num), where GB_num is the number of granular balls
     """
     n_samples = test_samples.shape[0]
-
-    # 转换为 NumPy 数组
     GB_num = len(matrix_list_GB)
-    t = len(matrix_list_GB[0])  # 每个粒球的时间步数
+    t = len(matrix_list_GB[0])  # Number of time steps per granular ball
 
-    # 初始化存储结构
-    matrix_array = np.zeros((GB_num, t, n_features, 3), dtype=np.float32)  # 存储隶属度、非隶属度、犹豫度
-    X_avg_matrix = np.zeros((GB_num, t, n_features), dtype=np.float32)  # 存储每个粒球的中心 x_avg
-    labels = np.zeros((GB_num, t), dtype=int)  # 存储粒球标签
+    # Initialize storage arrays
+    matrix_array = np.zeros((GB_num, t, n_features, 3),
+                            dtype=np.float32)  # Stores [membership, non-membership, hesitation]
+    X_avg_matrix = np.zeros((GB_num, t, n_features),
+                            dtype=np.float32)  # Stores centroid (x_avg) of each granular ball at each time step
+    labels = np.zeros((GB_num, t), dtype=int)  # Stores labels of granular balls
 
-    # 填充数据
+    # Populate arrays from matrix_list_GB
     for GB_idx in range(GB_num):
         for t_step in range(t):
-            # 原始数据格式: matrix_list_GB[GB_idx][t_step] = [ (n_features,3)数组, 标签, (n_features,)中心 ]
-            matrix_array[GB_idx, t_step] = matrix_list_GB[GB_idx][t_step][0]  # (n_features,3)
-            labels[GB_idx, t_step] = matrix_list_GB[GB_idx][t_step][1]  # 标量标签
+            # matrix_list_GB[GB_idx][t_step] = [ (n_features, 3) IFS matrix, scalar label, (n_features,) centroid ]
+            matrix_array[GB_idx, t_step] = matrix_list_GB[GB_idx][t_step][0]  # (n_features, 3)
+            labels[GB_idx, t_step] = matrix_list_GB[GB_idx][t_step][1]  # scalar label
             X_avg_matrix[GB_idx, t_step] = matrix_list_GB[GB_idx][t_step][2]  # (n_features,)
 
-    n_samples = test_samples.shape[0]
-    batch_size = 300  # 根据内存调整
+    # Process test samples in batches to manage memory usage
+    batch_size = 300  # Adjust based on available memory
     results = []
 
-    # 分块处理测试样本
     for i in range(0, n_samples, batch_size):
-        B_batch = test_samples[i:i + batch_size]
+        B_batch = test_samples[i:i + batch_size]  # Shape: (batch_size, n_features)
         batch_scores = optimized_process(B_batch, X_avg_matrix, matrix_array, t)
         results.append(batch_scores)
 
-    # 合并结果并找到最近邻
-    results = np.vstack(results)  # (n_samples, GB_num)
+    # Combine batch results and return
+    results = np.vstack(results)  # Shape: (n_samples, GB_num)
     results = np.array(results, dtype=np.float32)
-    return np.array(results)
+    return results
 
 
 def classifier(average_results, matrix_list_GB):
     """
-    对动态 IFS 矩阵进行分类（优化版本）
+    Classifies test samples based on their matching scores with granular balls
+    using a k-nearest neighbor voting strategy.
+
+    Args:
+        average_results: Matching score matrix of shape (n_samples, GB_num),
+                         where lower scores indicate higher similarity.
+        matrix_list_GB: List of granular balls used during training;
+                        needed to retrieve class labels.
+
+    Returns:
+        predicted_labels: List of predicted class labels for each test sample.
     """
     results_with_t = average_results
-    row_indices = []
-    k = 1  # 选择 k 个最小值
+    predicted_labels = []
+    k = 1  # Number of nearest neighbors to consider (k=1 for 1-NN)
 
-    # 预提取 matrix_list_GB 中的标签
+    # Pre-extract labels of all granular balls (using label at time step 0 as representative)
     labels_all = [matrix_list_GB[idx][0][1] for idx in range(len(matrix_list_GB))]
-    labels_all = np.array(labels_all, dtype=int)  # 转换为 numpy 数组
+    labels_all = np.array(labels_all, dtype=int)
 
     for arr in results_with_t:
-        # 找到 k 个最小值的索引
+        # Find indices of the k smallest scores (most similar granular balls)
         min_indices = np.argpartition(arr, k, axis=None)[:k]
 
-        # 直接从预提取的 labels_all 获取标签
-        labels = labels_all[min_indices]
+        # Retrieve corresponding labels
+        neighbor_labels = labels_all[min_indices]
 
-        # 统计投票
-        most_common_label = Counter(labels).most_common(1)[0][0]
-        # most_common_label = np.bincount(labels).argmax()
-        row_indices.append(most_common_label)
+        # Majority vote among k neighbors (for k=1, this is just the single label)
+        most_common_label = Counter(neighbor_labels).most_common(1)[0][0]
+        # Alternative (faster for small k): most_common_label = np.bincount(neighbor_labels).argmax()
 
-    return row_indices
+        predicted_labels.append(most_common_label)
+
+    return predicted_labels
 
 
-def main(random_state, data_x, data_y, labels_len, importances=None):
+def main(random_state, data_x, data_y, labels_len, GB_num, feature, importances=None):
     feature_seletion = 0
 
     features_nums = np.zeros(120)
@@ -178,7 +199,7 @@ def main(random_state, data_x, data_y, labels_len, importances=None):
     a = 0
     data_train1, data_test, labels_train, labels_test = preprocess_data(data_x, data_y, random_state)
 
-    for j in range(10, 11):
+    for j in range(feature, feature + 1):
         features_nums[a] = j
 
         if feature_seletion == 0:
@@ -186,67 +207,61 @@ def main(random_state, data_x, data_y, labels_len, importances=None):
             model_rf = RandomForestClassifier(n_estimators=100, n_jobs=-1, random_state=42)
             model_rf.fit(data_train1, labels_train)
 
-            # 获取特征重要性分数
+            # Obtain feature importance scores
             importances = model_rf.feature_importances_
 
-            # 选择k个重要性最高的特征索引
-            k = j  # 设定所需特征个数
+            k = j
             beginfeature = k
-            sorted_indices = np.argsort(importances)[-k:]  # 获取前k个特征的索引
+            sorted_indices = np.argsort(importances)[-k:]
             data_x = np.array(data_x)
-            # 筛选前k个特征
+            # Filter the top k features
             data_x1 = data_train1[:, sorted_indices]
             data_test1 = data_test[:, sorted_indices]
-            print("使用的特征索引", sorted_indices)
+            print("Number of features used", sorted_indices)
             feature_seletion = 1
         else:
-            # 选择k个重要性最高的特征索引
-            k = j  # 设定所需特征个数
-            print("使用的特征数量:", k)
-            sorted_indices = np.argsort(importances)[-k:]  # 获取前k个特征的索引
+
+            k = j
+            print("Number of features used:", k)
+            sorted_indices = np.argsort(importances)[-k:]
             data_x = np.array(data_x)
-            # 筛选前k个特征
+            # Filter the top k features
             data_x1 = data_train1[:, sorted_indices]
             data_test1 = data_test[:, sorted_indices]
-            print("使用的特征索引", sorted_indices)
+            print("Feature index used", sorted_indices)
 
         n_features = data_x1.shape[1]
-        # 合并 data_train和labels_train
-        # data_train = scalerdata(data_train)
-        # data_test = scalerdata(data_test)
         data_train = np.concatenate((data_x1, labels_train.reshape(-1, 1)), axis=1)
-        # 合并 data_train和labels_train
+
         training_timelen = len(data_train)
-        # 输入到粒球
+        # GB generation
         start_time = time.time()
         Generation_method = 2
         if Generation_method == 2:
-            nGB = 20
+            nGB = GB_num
             n_clusters = []
-            # 创建一个空列表
-            for _ in range(labels_len):  # 使用下划线(_)表示这个循环变量不会被使用
-                n_clusters.append(nGB)  # 每次循环向列表添加数字100
-            n_clusters[0] = 200
-            n_clusters[1] = 200
+            for _ in range(labels_len):
+                n_clusters.append(nGB)
+            # n_clusters[0] = 200
+            # n_clusters[1] = 200
             data_GB = CGB_data(data_train, n_clusters)
-            print("每个类别的粒球数量", n_clusters)
+            print("Number of pellets in each category", n_clusters)
 
-
-        matrix_list_GB = []  # 粒球数*t*
-        for data_gb in data_GB:  # n个列表里分别有，中心平均值 半径 标签 数据
-            data_mean = data_gb[0]  # 数据中心
-            data_R = data_gb[1]  # 半径
-            data_l = data_gb[2]  # 标签
-            data_origin = data_gb[3]  # 数据
+        matrix_list_GB = []  #
+        for data_gb in data_GB:  # Each of the n lists contains: central mean, radius, label, and data.
+            data_mean = data_gb[0]  # Center
+            data_R = data_gb[1]  # radius
+            data_l = data_gb[2]  # label
+            data_origin = data_gb[3]  # data
 
             train_lens, n_features = data_origin.shape[0], data_origin.shape[1]
-            # 动态 按时间切
+            # Dynamically cut by time but t=1, just no use
             data_train = Time_cut(data_origin, t)
-            # 使用 NumPy 数组替代列表
-            labels_train1 = np.full(2, data_l, dtype=type(data_l))  # 指定数据类型为 data_l 的类型
+            # Use NumPy arrays instead of lists
+            labels_train1 = np.full(2, data_l, dtype=type(data_l))  # The specified data type is data_l
             labels_train1 = Time_cut(labels_train1, t)
 
-            # 创建动态直觉模糊矩阵
+            # Creating intuitionistic fuzzy matrices
             matrix_list_all = []
 
             for i in range(t):
@@ -259,34 +274,36 @@ def main(random_state, data_x, data_y, labels_len, importances=None):
 
         end_time = time.time()
         training_time = end_time - start_time
-        print("训练时间：", training_time)
-        print("训练时间/训练集：", training_time / training_timelen)
+        print("Training time：", training_time)
+        print("Training time/training set：", training_time / training_timelen)
 
         # 测试集
         start_time = time.time()
         average_results = create_dynamic_if_matrix_test(data_test1, n_features, matrix_list_GB, t)
         end_time = time.time()
         test_matrix_time = end_time - start_time
-        print("构建测试集时间：", test_matrix_time)
-        print("构建测试集时间/预测集：", test_matrix_time / len(labels_test))
+        print("Test set build time：", test_matrix_time)
+        print("Test set construction time / Test set：", test_matrix_time / len(labels_test))
 
         # 预测
         start_time = time.time()
         predictions_indices = classifier(average_results, matrix_list_GB)  # 换成粒球输入
         end_time = time.time()
         pre_time = end_time - start_time
-        print("预测时间：", pre_time)
-        print("预测时间/预测集：", pre_time / len(predictions_indices))
+        print("Predicted time：", pre_time)
+        print("Prediction time/prediction set：", pre_time / len(predictions_indices))
 
         # 评估性能
         accuracy, macro_precision, macro_recall, macro_f1_score, results = evaluate_performance(
             np.array(predictions_indices),
             labels_test)
 
-        Accuracy, Precision, Recall, F1_score, C1_Recall, C1_F1_score, FPR = print_meetrics(a, accuracy, macro_precision, macro_recall, macro_f1_score, results)
-        print('特征选择量为：', n_features)
+        Accuracy, Precision, Recall, F1_score, C1_Recall, C1_F1_score, FPR = print_meetrics(a, accuracy,
+                                                                                            macro_precision,
+                                                                                            macro_recall,
+                                                                                            macro_f1_score, results)
+        print('The number of features selected is:', n_features)
         a = a + 1
-
 
     return Accuracy, Precision, Recall, F1_score, C1_Recall, C1_F1_score, FPR, beginfeature, features_nums
 
@@ -301,10 +318,39 @@ if __name__ == '__main__':
     C1_Recall3 = []
     C1_F1_score3 = []
     FPR3 = []
-    data_x, data_y, labels_len = datasetload()
+    #
+    # filename = r"data\X-IIOTID\X-IIoTID dataset.csv"
+    # GB_num = 200
+    # feature = 10
+
+    # filename = r"data\TON-IOT\Train_Test_Network.csv"
+    # GB_num = 10
+    # feature = 14
+
+    # filename = r"data\WUSTL-IIOT\wustl_iiot_2021.csv"
+    # GB_num = 20
+    # feature = 13
+
+    filename = r"data\KDDCUP99\kddcup.data"
+    GB_num = 50
+    feature = 37
+
+    # filename = r"data\UNSW-NB15\UNSW-NB15_full.csv"
+    # GB_num = 40
+    # feature = 6
+
+    # filename = r"data\NSLKDD\KDDTest+.csv"
+    # GB_num = 600
+    # feature = 22
+
+    # GB_num = 200
+    # feature = 10
+
+    data_x, data_y, labels_len = datasetload(filename)
+
     for random_state in random_states:
         Accuracy, macro_precision, macro_recall, macro_f1_score, C1_Recall, C1_F1_score, FPR, beginfeature, \
-            features_nums = main(random_state, data_x, data_y, labels_len)
+            features_nums = main(random_state, data_x, data_y, labels_len, GB_num, feature)
 
         Accuracy3.append(Accuracy)
         macro_precision3.append(macro_precision)
@@ -319,49 +365,51 @@ if __name__ == '__main__':
         # 最大值的索引
         max_index = np.argmax(Accuracy)
         max_index += beginfeature
-        print('最大准确率为：', max_accuracy)
-        print("最大准确率对应的特征数量为：", max_index)
+        print('The maximum accuracy for each feature is:：', max_accuracy)
+        print("The number of features selected is：", max_index)
         non_zero_accuracy = Accuracy[Accuracy != 0]
-        print('准确率列表为：', non_zero_accuracy)
-        # print("data_GB的数量", len(data_GB))
+        print('The accuracy rate list is :：', non_zero_accuracy)
+
+        print('------------------')
         print("\n")
 
 
     def datemean(resultstemp3, max_index):
 
         resultstemp = np.mean(resultstemp3, axis=0)
-        # Accuracy里的最大值
         max_resultstemp = resultstemp[max_index]
 
         non_zero_resultstemp = resultstemp[resultstemp != 0]
         return resultstemp, max_resultstemp, non_zero_resultstemp
 
 
-    print("3次平均结果")
-    Accuracy = np.mean(Accuracy3, axis=0) # 多个随机数取平均（所有特征下寻找最大平均值）
+    print("3 average results")
+    Accuracy = np.mean(Accuracy3,
+                       axis=0)  # Averaging of multiple random numbers (finding the maximum average across all features)
     max_accuracy = max(Accuracy)
     max_index = np.argmax(Accuracy)
     max_indextemp = beginfeature + max_index
     non_zero_accuracy = Accuracy[Accuracy != 0]
-    print('最大平均准确率为：', max_accuracy)
-    print("最大平均准确率对应的特征数量为：", max_indextemp)
-    print('平均准确率列表为：', non_zero_accuracy)
-
+    print('Maximum average accuracy is：', max_accuracy)
+    print("The number of features corresponding to the maximum average accuracy is：", max_indextemp)
+    print('The average accuracy list is as follows：', non_zero_accuracy)
+    print('------------------')
     macro_precision, max_macro_precision, non_zero_macro_precision = datemean(macro_precision3, max_index)
     macro_recall, max_macro_recall, non_zero_macro_recall = datemean(macro_recall3, max_index)
     macro_f1_score, max_f1_score, non_zero_f1_score = datemean(macro_f1_score3, max_index)
     C1_Recall, max_C1_Recall, non_zero_C1_Recall = datemean(C1_Recall3, max_index)
     C1_F1_score, max_C1_F1_score, non_zero_C1_F1_score = datemean(C1_F1_score3, max_index)
     FPR, max_FPR, non_zero_FPR = datemean(FPR3, max_index)
-    print('最大平均准确率对应的macro_precision为：', max_macro_precision)
-    print('最大平均准确率对应macro_recall为：', max_macro_recall)
-    print('最大平均准确率对应macro_f1_score为：', max_f1_score)
-    print('最大平均准确率对应C1_Recall为：', max_C1_Recall)
-    print('最大平均准确率对应C1_F1_score为：', max_C1_F1_score)
-    print('最大平均准确率对应FPR为：', max_FPR)
-    print('macro_precision列表为：', non_zero_macro_precision)
-    print('macro_recall列表为：', non_zero_macro_recall)
-    print('macro_f1_score列表为：', non_zero_f1_score)
-    print('C1_Recall列表为：', non_zero_C1_Recall)
-    print('C1_F1_score列表为：', non_zero_C1_F1_score)
-    print('FPR列表为：', non_zero_FPR)
+    print('The macro_precision corresponding to the highest average accuracy is:', max_macro_precision)
+    print('The macro_recall corresponding to the highest average accuracy is:', max_macro_recall)
+    print('The macro_f1_score corresponding to the highest average accuracy is:', max_f1_score)
+    print('The C1_Recall corresponding to the highest average accuracy is:', max_C1_Recall)
+    print('The C1_F1_score corresponding to the highest average accuracy is:', max_C1_F1_score)
+    print('The FPR corresponding to the highest average accuracy is:', max_FPR)
+    print('List of macro_precision values:', non_zero_macro_precision)
+    print('List of macro_recall values:', non_zero_macro_recall)
+    print('List of macro_f1_score values:', non_zero_f1_score)
+    print('List of C1_Recall values:', non_zero_C1_Recall)
+    print('List of C1_F1_score values:', non_zero_C1_F1_score)
+    print('List of FPR values:', non_zero_FPR)
+    print('------------------')

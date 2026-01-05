@@ -48,8 +48,9 @@ The framework constructs **Granular-Ball Intuitionistic Fuzzy Patterns (GBIFP)**
 ├── GBIFSmodel.py        # Core implementation of the GBIFS model
 ├── preprocess_data.py   # Data loading, normalization, and splitting
 ├── metric.py            # Custom metrics (e.g., Accuracy, Precision, Recall, F1_score, FPR)
-├── data/                # (Optional) Place for sample datasets or links
-└── results/             # (Ignored) Saved outputs, logs, figures
+├── data/                # Place for sample datasets or links
+├── download_data.py     # download dataset form Google Drive
+└── results/             # Saved outputs, logs, figures
 ```
 
 ---
@@ -62,6 +63,7 @@ The framework constructs **Granular-Ball Intuitionistic Fuzzy Patterns (GBIFP)**
 * **NumPy**: 1.26.4
 * **Pandas**: 2.1.4
 * **scikit-learn**: 1.3.0
+* * **gdown**: 5.2.0
 
 ### Installation
 
@@ -73,6 +75,16 @@ pip install -r requirements.txt
 
 ### Run
 
+
+Download and prepare the preprocessed dataset:
+```bash
+python download_data.py
+```
+This will:
+Download the 2GB dataset from Google Drive
+Extract all files into ./data
+
+Run the main experiment:
 ```bash
 python GBIFSmodel.py 
 ```

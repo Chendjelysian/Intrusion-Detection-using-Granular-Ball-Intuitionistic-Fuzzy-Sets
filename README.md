@@ -28,16 +28,7 @@ To address these challenges, this project implements an intrusion detection fram
 The framework constructs **Granular-Ball Intuitionistic Fuzzy Patterns (GBIFP)** that conform to the intrinsic feature distributions of IIoT data, enabling effective discrimination between normal traffic and diverse attack behaviors.
 
 > 📌 **Key Insight**
-> By combining adaptive multi-granularity representation with intuitionistic fuzzy reasoning, the GBIFS framework overcomes the limitations of radius-dependent granulation and achieves robust performance under heterogeneous and sparse data conditions.
-
----
-
-## ✨ Main Contributions
-
-* A **novel class-wise Granular-Ball generation strategy** tailored to IIoT intrusion data
-* Construction of **Granular-Ball Intuitionistic Fuzzy Patterns (GBIFP)** aligned with feature distributions
-* An **improved intuitionistic fuzzy distance metric** for accurate intrusion classification
-* Superior performance validated on both **IIoT datasets** (X-IIoTID, TON-IOT, WUSTL-IIOT) and **classical NIDS datasets** (KDDCUP99, NSL-KDD, UNSW-NB15)
+> By combining adaptive multi-granularity representation with intuitionistic fuzzy reasoning, the GBIFS framework overcomes the limitations of purity-dependent granulation and achieves robust performance under heterogeneous and sparse data conditions.
 
 ---
 

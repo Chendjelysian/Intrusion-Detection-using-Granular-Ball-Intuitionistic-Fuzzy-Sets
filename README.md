@@ -49,8 +49,7 @@ The framework constructs **Granular-Ball Intuitionistic Fuzzy Patterns (GBIFP)**
 ├── preprocess_data.py   # Data loading, normalization, and splitting
 ├── metric.py            # Custom metrics (e.g., Accuracy, Precision, Recall, F1_score, FPR)
 ├── data/                # (Optional) Place for sample datasets or links
-├── results/             # (Ignored) Saved outputs, logs, figures
-└── models/              # (Ignored) Trained models
+└── results/             # (Ignored) Saved outputs, logs, figures
 ```
 
 ---
@@ -66,13 +65,7 @@ The framework constructs **Granular-Ball Intuitionistic Fuzzy Patterns (GBIFP)**
 
 ### Installation
 
-Since the project currently does not include a `requirements.txt`, you can either install manually:
-
-```bash
-pip install numpy pandas scikit-learn scipy matplotlib
-```
-
-or use the provided `requirements.txt` (see below):
+use the provided `requirements.txt` (see below):
 
 ```bash
 pip install -r requirements.txt
@@ -95,7 +88,7 @@ The framework supports multiple evaluation metrics tailored for imbalanced intru
 * Recall
 * F1-score
 * False Positive Rate (FPR)
-* Confusion Matrix Visualization
+
 
 ---
 

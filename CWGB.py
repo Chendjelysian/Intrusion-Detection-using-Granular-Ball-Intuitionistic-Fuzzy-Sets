@@ -39,7 +39,7 @@ def CGB_data(data_train, n_clusters):
             return [[center, radius, label, data]]
 
         # Case: perform KMeans clustering
-        kmeans = KMeans(n_clusters=n_clusters, random_state=7, n_init=5).fit(data)
+        kmeans = KMeans(n_clusters=n_clusters, random_state=7, n_init=10).fit(data)
         centers = kmeans.cluster_centers_
         cluster_labels = kmeans.labels_
         clusters = []

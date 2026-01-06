@@ -65,9 +65,7 @@ def optimized_process(B_batch, X_avg_matrix, matrix_array, t):
         scores: Matching score matrix, shape (batch_size, GB_num)
     """
     # Initialize weighting parameters
-    men = 1  # weight for membership degree
-    nonmen = 1  # weight for non-membership degree
-    hes = 1  # weight for hesitation (uncertainty) degree
+
     dim1 = 1  # exponent for distance weighting
 
     # Optional: print parameter settings (currently commented out)
@@ -84,9 +82,9 @@ def optimized_process(B_batch, X_avg_matrix, matrix_array, t):
     abs_diff = np.abs(diff)
 
     # Compute intuitionistic fuzzy components using broadcasting
-    membership = (1 - np.sqrt(abs_diff)) * men  # (batch, GB, t, n_features)
-    non_membership = abs_diff * nonmen  # (batch, GB, t, n_features)
-    uncertainty = (1 - membership - non_membership) * hes  # (batch, GB, t, n_features)
+    membership = (1 - np.sqrt(abs_diff))  # (batch, GB, t, n_features)
+    non_membership = abs_diff  # (batch, GB, t, n_features)
+    uncertainty = (1 - membership - non_membership)  # (batch, GB, t, n_features)
 
     # Extract reference fuzzy components from granular balls
     # matrix_array: (GB_num, t, 30, 3) → split into three channels
@@ -100,7 +98,7 @@ def optimized_process(B_batch, X_avg_matrix, matrix_array, t):
     d_pi = np.abs(uncertainty - ref_pi) ** dim1 / (1 + uncertainty + ref_pi)
 
     # Average over time and feature dimensions to obtain final scores
-    scores = np.mean(d_mu + d_nu + d_pi, axis=(2, 3))  # (batch_size, GB_num)
+    scores = np.mean(d_mu * men + d_nu * nomen + d_pi * hes, axis=(2, 3))  # (batch_size, GB_num)
     return scores
 
 
@@ -319,32 +317,36 @@ if __name__ == '__main__':
     C1_F1_score3 = []
     FPR3 = []
     #
+    global men  # weight for membership degree
+    global nomen  # weight for non-membership degree
+    global hes  # weight for hesitation (uncertainty) degree
+    men = 1
+    nomen = 1
+    hes = 10
+
     # filename = r"data\X-IIOTID\X-IIoTID dataset.csv"
-    # GB_num = 200
+    # GB_num = 100
     # feature = 10
 
     # filename = r"data\TON-IOT\Train_Test_Network.csv"
-    # GB_num = 10
+    # GB_num = 5
     # feature = 14
 
     # filename = r"data\WUSTL-IIOT\wustl_iiot_2021.csv"
-    # GB_num = 20
+    # GB_num = 10
     # feature = 13
 
     filename = r"data\KDDCUP99\kddcup.data"
-    GB_num = 50
+    GB_num = 25
     feature = 37
 
     # filename = r"data\UNSW-NB15\UNSW-NB15_full.csv"
-    # GB_num = 40
+    # GB_num = 20
     # feature = 6
 
     # filename = r"data\NSLKDD\KDDTest+.csv"
-    # GB_num = 600
-    # feature = 22
-
-    # GB_num = 200
-    # feature = 10
+    # GB_num = 400
+    # feature = 23
 
     data_x, data_y, labels_len = datasetload(filename)
 
@@ -365,10 +367,10 @@ if __name__ == '__main__':
         # 最大值的索引
         max_index = np.argmax(Accuracy)
         max_index += beginfeature
-        print('The maximum accuracy for each feature is:：', max_accuracy)
-        print("The number of features selected is：", max_index)
+        print('The maximum accuracy for each feature is:', max_accuracy)
+        print("The number of features selected is:", max_index)
         non_zero_accuracy = Accuracy[Accuracy != 0]
-        print('The accuracy rate list is :：', non_zero_accuracy)
+        print('The accuracy rate list is:', non_zero_accuracy)
 
         print('------------------')
         print("\n")
@@ -390,26 +392,26 @@ if __name__ == '__main__':
     max_index = np.argmax(Accuracy)
     max_indextemp = beginfeature + max_index
     non_zero_accuracy = Accuracy[Accuracy != 0]
-    print('Maximum average accuracy is：', max_accuracy)
-    print("The number of features corresponding to the maximum average accuracy is：", max_indextemp)
-    print('The average accuracy list is as follows：', non_zero_accuracy)
+    print('Maximum average accuracy is:', max_accuracy)
+    print("The number of features corresponding to the maximum average accuracy is:", max_indextemp)
+    print('The average accuracy list is as follows:', non_zero_accuracy)
     print('------------------')
     macro_precision, max_macro_precision, non_zero_macro_precision = datemean(macro_precision3, max_index)
     macro_recall, max_macro_recall, non_zero_macro_recall = datemean(macro_recall3, max_index)
     macro_f1_score, max_f1_score, non_zero_f1_score = datemean(macro_f1_score3, max_index)
-    C1_Recall, max_C1_Recall, non_zero_C1_Recall = datemean(C1_Recall3, max_index)
-    C1_F1_score, max_C1_F1_score, non_zero_C1_F1_score = datemean(C1_F1_score3, max_index)
+    # C1_Recall, max_C1_Recall, non_zero_C1_Recall = datemean(C1_Recall3, max_index)
+    # C1_F1_score, max_C1_F1_score, non_zero_C1_F1_score = datemean(C1_F1_score3, max_index)
     FPR, max_FPR, non_zero_FPR = datemean(FPR3, max_index)
     print('The macro_precision corresponding to the highest average accuracy is:', max_macro_precision)
     print('The macro_recall corresponding to the highest average accuracy is:', max_macro_recall)
     print('The macro_f1_score corresponding to the highest average accuracy is:', max_f1_score)
-    print('The C1_Recall corresponding to the highest average accuracy is:', max_C1_Recall)
-    print('The C1_F1_score corresponding to the highest average accuracy is:', max_C1_F1_score)
+    # print('The C1_Recall corresponding to the highest average accuracy is:', max_C1_Recall)
+    # print('The C1_F1_score corresponding to the highest average accuracy is:', max_C1_F1_score)
     print('The FPR corresponding to the highest average accuracy is:', max_FPR)
     print('List of macro_precision values:', non_zero_macro_precision)
     print('List of macro_recall values:', non_zero_macro_recall)
     print('List of macro_f1_score values:', non_zero_f1_score)
-    print('List of C1_Recall values:', non_zero_C1_Recall)
-    print('List of C1_F1_score values:', non_zero_C1_F1_score)
+    # print('List of C1_Recall values:', non_zero_C1_Recall)
+    # print('List of C1_F1_score values:', non_zero_C1_F1_score)
     print('List of FPR values:', non_zero_FPR)
     print('------------------')

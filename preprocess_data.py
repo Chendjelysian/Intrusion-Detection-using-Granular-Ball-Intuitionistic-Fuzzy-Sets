@@ -233,7 +233,7 @@ def preprocess_data(data, labels, random_state, test_size=0.2):
     scaler = MinMaxScaler()
     data = np.array(data)
     data = scaler.fit_transform(data)
-    print("数据归一化")
+    print("Data normalization")
 
     data_train, data_test, labels_train, labels_test = train_test_split(data, labels, test_size=test_size,
                                                                         random_state=random_state)

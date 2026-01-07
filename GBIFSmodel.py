@@ -203,8 +203,8 @@ def main(random_state, data_x, data_y, labels_len, GB_num, feature, importances=
     a = 0
     data_train1, data_test, labels_train, labels_test = preprocess_data(data_x, data_y, random_state)
 
-    # for j in range(feature, feature + 1):
-    for j in range(17, 28):
+    for j in range(feature, feature + 1):
+        # for j in range(17, 28):
         features_nums[a] = j
 
         if feature_seletion == 0:
@@ -336,9 +336,9 @@ if __name__ == '__main__':
     nomen = 1
     hes = 1
 
-    # filename = r"data\X-IIOTID\X-IIoTID dataset.csv"
-    # GB_num = 100
-    # feature = 10
+    filename = r"data\X-IIOTID\X-IIoTID dataset.csv"
+    GB_num = 100
+    feature = 10
 
     # filename = r"data\TON-IOT\Train_Test_Network.csv"
     # GB_num = 5
@@ -356,9 +356,9 @@ if __name__ == '__main__':
     # GB_num = 20
     # feature = 6
 
-    filename = r"data\NSLKDD\KDDTest+.csv"
-    GB_num = 400
-    feature = 23
+    # filename = r"data\NSLKDD\KDDTest+.csv"
+    # GB_num = 400
+    # feature = 23
 
     data_x, data_y, labels_len = datasetload(filename)
 

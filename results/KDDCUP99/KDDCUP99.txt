@@ -9,146 +9,142 @@ Number of samples for each category in data_y: 41
 1    3925650
 0     972781
 Name: count, dtype: int64
-数据归一化
+Data normalization
 Number of features used [ 8 17 13 16 10 21 18 15  5  7  9 12  4 27 24 26 39 37 38 40 25  0 28 29
  32 33 30 34  1 35 36 23 31  3 11  2 22]
-Number of pellets in each category [50, 50]
-Training time： 94.42504119873047
-Training time/training set： 2.409574118613782e-05
-Test set build time： 258.29051423072815
-Test set construction time / Test set： 0.00026364595450457967
-Predicted time： 8.006526231765747
-Prediction time/prediction set： 8.172534933877602e-06
+Number of pellets in each category [25, 25]
+Training time： 100.22914624214172
+Training time/training set： 2.5576854788713353e-05
+Test set build time： 140.18725895881653
+Test set construction time / Test set： 0.0001430939258751178
+Predicted time： 7.215357780456543
+Prediction time/prediction set： 7.364962258819952e-06
 Confusion matrix:
-[[193543    849]
- [   329 784966]]
+[[193263   1129]
+ [   464 784831]]
 Class Metrics:
 Class 0:
-  precision: 0.998303
-  recall: 0.99563254
-  f1_score: 0.99696598
-  accuracy: 0.998303
-  fpr: 0.00041895
+  precision: 0.99760488
+  recall: 0.99419215
+  f1_score: 0.99589559
+  accuracy: 0.99760488
+  fpr: 0.00059086
   support: 194392.0
 Class 1:
-  precision: 0.99891959
-  recall: 0.99958105
-  f1_score: 0.99925021
-  accuracy: 0.99891959
-  fpr: 0.00436746
+  precision: 0.99856354
+  recall: 0.99940914
+  f1_score: 0.99898616
+  accuracy: 0.99856354
+  fpr: 0.00580785
   support: 785295.0
-Accuracy: 0.99879758
-Macro Precision: 0.99861130
-Macro Recall: 0.99760679
-Macro F1 Score: 0.99810810
-The prediction accuracy is： 99.8797575143898 %
+Accuracy: 0.99837397
+Macro Precision: 0.99808421
+Macro Recall: 0.99680064
+Macro F1 Score: 0.99744087
+The prediction accuracy is： 99.83739704619946 %
 ----------
 The number of features selected is: 37
-The maximum accuracy for each feature is:： 0.998797575143898
-The number of features selected is： 37
-The accuracy rate list is :： [0.99879758]
+The maximum accuracy for each feature is: 0.9983739704619945
+The number of features selected is: 37
+The accuracy rate list is: [0.99837397]
 ------------------
 
 
-数据归一化
+Data normalization
 Number of features used [ 6 17 13 16 10 18 15 21  5  7 12  9  4 27 39 24 26 40 37 38 25  0 29 34
  28 30 33 32 35  1 36  3 23 31 11  2 22]
-Number of pellets in each category [50, 50]
-Training time： 100.66099071502686
-Training time/training set： 2.5687054503949954e-05
-Test set build time： 255.64892554283142
-Test set construction time / Test set： 0.0002609495946591426
-Predicted time： 7.097789764404297
-Prediction time/prediction set： 7.244956567152873e-06
+Number of pellets in each category [25, 25]
+Training time： 96.19928765296936
+Training time/training set： 2.4548500145191765e-05
+Test set build time： 134.8310284614563
+Test set construction time / Test set： 0.00013762663836659698
+Predicted time： 7.306329727172852
+Prediction time/prediction set： 7.45782043364141e-06
 Confusion matrix:
-[[193295    773]
- [   248 785371]]
+[[192991   1077]
+ [   531 785088]]
 Class Metrics:
 Class 0:
-  precision: 0.99871863
-  recall: 0.99601686
-  f1_score: 0.99736592
-  accuracy: 0.99871863
-  fpr: 0.00031567
+  precision: 0.99725613
+  recall: 0.9944504
+  f1_score: 0.99585129
+  accuracy: 0.99725613
+  fpr: 0.0006759
   support: 194068.0
 Class 1:
-  precision: 0.99901672
-  recall: 0.99968433
-  f1_score: 0.99935041
-  accuracy: 0.99901672
-  fpr: 0.00398314
+  precision: 0.99863006
+  recall: 0.9993241
+  f1_score: 0.99897696
+  accuracy: 0.99863006
+  fpr: 0.0055496
   support: 785619.0
-Accuracy: 0.99895783
-Macro Precision: 0.99886768
-Macro Recall: 0.99785059
-Macro F1 Score: 0.99835816
-The prediction accuracy is： 99.89578304091 %
+Accuracy: 0.99835866
+Macro Precision: 0.99794309
+Macro Recall: 0.99688725
+Macro F1 Score: 0.99741412
+The prediction accuracy is： 99.83586594493956 %
 ----------
 The number of features selected is: 37
-The maximum accuracy for each feature is:： 0.9989578304091
-The number of features selected is： 37
-The accuracy rate list is :： [0.99895783]
+The maximum accuracy for each feature is: 0.9983586594493956
+The number of features selected is: 37
+The accuracy rate list is: [0.99835866]
 ------------------
 
 
-数据归一化
+Data normalization
 Number of features used [ 6 17 16 13 10 18 21 15  5  7  9 12 27 24  4 39 26 40 37 38 25  0 28 33
  34 29 30 32  1 35  3 23 36 31 11  2 22]
-Number of pellets in each category [50, 50]
-Training time： 100.55759882926941
-Training time/training set： 2.5660670569261328e-05
-Test set build time： 251.35896110534668
-Test set construction time / Test set： 0.00025657068135572555
-Predicted time： 6.767585039138794
-Prediction time/prediction set： 6.907905319901963e-06
+Number of pellets in each category [25, 25]
+Training time： 102.78784704208374
+Training time/training set： 2.622979379160357e-05
+Test set build time： 136.86804509162903
+Test set construction time / Test set： 0.0001397058908525162
+Predicted time： 7.138586044311523
+Prediction time/prediction set： 7.286598724196119e-06
 Confusion matrix:
-[[193435   1254]
- [   283 784715]]
+[[194061    628]
+ [   750 784248]]
 Class Metrics:
 Class 0:
-  precision: 0.99853911
-  recall: 0.99355896
-  f1_score: 0.99604281
-  accuracy: 0.99853911
-  fpr: 0.00036051
+  precision: 0.99615011
+  recall: 0.99677434
+  f1_score: 0.99646213
+  accuracy: 0.99615011
+  fpr: 0.00095542
   support: 194689.0
 Class 1:
-  precision: 0.99840452
-  recall: 0.99963949
-  f1_score: 0.99902162
-  accuracy: 0.99840452
-  fpr: 0.00644104
+  precision: 0.99919987
+  recall: 0.99904458
+  f1_score: 0.99912222
+  accuracy: 0.99919987
+  fpr: 0.00322566
   support: 784998.0
-Accuracy: 0.99843113
-Macro Precision: 0.99847182
-Macro Recall: 0.99659922
-Macro F1 Score: 0.99753222
-The prediction accuracy is： 99.84311315756972 %
+Accuracy: 0.99859343
+Macro Precision: 0.99767499
+Macro Recall: 0.99790946
+Macro F1 Score: 0.99779218
+The prediction accuracy is： 99.85934283092458 %
 ----------
 The number of features selected is: 37
-The maximum accuracy for each feature is:： 0.9984311315756972
-The number of features selected is： 37
-The accuracy rate list is :： [0.99843113]
+The maximum accuracy for each feature is: 0.9985934283092457
+The number of features selected is: 37
+The accuracy rate list is: [0.99859343]
 ------------------
 
 
 3 average results
-Maximum average accuracy is： 0.998728845709565
-The number of features corresponding to the maximum average accuracy is： 37
-The average accuracy list is as follows： [0.99872885]
+Maximum average accuracy is: 0.9984420194068786
+The number of features corresponding to the maximum average accuracy is: 37
+The average accuracy list is as follows: [0.99844202]
 ------------------
-The macro_precision corresponding to the highest average accuracy is: 0.998650263074382
-The macro_recall corresponding to the highest average accuracy is: 0.9973522030936887
-The macro_f1_score corresponding to the highest average accuracy is: 0.9979994921366835
-The C1_Recall corresponding to the highest average accuracy is: 0.9996349566666667
-The C1_F1_score corresponding to the highest average accuracy is: 0.9992074133333334
-The FPR corresponding to the highest average accuracy is: 0.004930546666666666
-List of macro_precision values: [0.99865026]
-List of macro_recall values: [0.9973522]
-List of macro_f1_score values: [0.99799949]
-List of C1_Recall values: [0.99963496]
-List of C1_F1_score values: [0.99920741]
-List of FPR values: [0.00493055]
+The macro_precision corresponding to the highest average accuracy is: 0.9979007649877482
+The macro_recall corresponding to the highest average accuracy is: 0.9971991186612591
+The macro_f1_score corresponding to the highest average accuracy is: 0.9975490579620101
+The FPR corresponding to the highest average accuracy is: 0.004861036666666666
+List of macro_precision values: [0.99790076]
+List of macro_recall values: [0.99719912]
+List of macro_f1_score values: [0.99754906]
+List of FPR values: [0.00486104]
 ------------------
 
 进程已结束,退出代码0

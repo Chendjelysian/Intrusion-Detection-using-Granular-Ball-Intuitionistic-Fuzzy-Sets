@@ -65,20 +65,24 @@ def evaluate_performance(predictions, true_labels):
     return accuracy, macro_precision, macro_recall, macro_f1_score, results
 
 
-def print_meetrics(a, accuracy, macro_precision, macro_recall, macro_f1_score, results):
+def print_meetrics(a, accuracy, macro_precision, macro_recall, macro_f1_score, results, Accuracy=None, Precision=None,
+                   Recall=None, F1_score=None,
+                   C1_Recall=None, C1_F1_score=None, FPR=None):
     print(f'Accuracy: {accuracy:.8f}')
     # print(f'False Alarm Rate: {false_alarm_rate:.5f}')
     print(f'Macro Precision: {macro_precision:.8f}')
     print(f'Macro Recall: {macro_recall:.8f}')
     print(f'Macro F1 Score: {macro_f1_score:.8f}')
 
-    Accuracy = np.zeros(120)
-    Precision = np.zeros(120)
-    Recall = np.zeros(120)
-    F1_score = np.zeros(120)
-    C1_Recall = np.zeros(120)
-    C1_F1_score = np.zeros(120)
-    FPR = np.zeros(120)
+    # # 如果没有提供数组，则创建新的数组
+    # if Accuracy is None:
+    #     Accuracy = np.zeros(120)
+    #     Precision = np.zeros(120)
+    #     Recall = np.zeros(120)
+    #     F1_score = np.zeros(120)
+    #     C1_Recall = np.zeros(120)
+    #     C1_F1_score = np.zeros(120)
+    #     FPR = np.zeros(120)
 
     Accuracy[a] = accuracy
     Precision[a] = macro_precision

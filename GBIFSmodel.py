@@ -191,13 +191,20 @@ def classifier(average_results, matrix_list_GB):
 
 def main(random_state, data_x, data_y, labels_len, GB_num, feature, importances=None):
     feature_seletion = 0
-
+    Accuracy = np.zeros(120)
+    Precision = np.zeros(120)
+    Recall = np.zeros(120)
+    F1_score = np.zeros(120)
+    C1_Recall = np.zeros(120)
+    C1_F1_score = np.zeros(120)
+    FPR = np.zeros(120)
     features_nums = np.zeros(120)
     t = 1
     a = 0
     data_train1, data_test, labels_train, labels_test = preprocess_data(data_x, data_y, random_state)
 
-    for j in range(feature, feature + 1):
+    # for j in range(feature, feature + 1):
+    for j in range(17, 28):
         features_nums[a] = j
 
         if feature_seletion == 0:
@@ -299,7 +306,12 @@ def main(random_state, data_x, data_y, labels_len, GB_num, feature, importances=
         Accuracy, Precision, Recall, F1_score, C1_Recall, C1_F1_score, FPR = print_meetrics(a, accuracy,
                                                                                             macro_precision,
                                                                                             macro_recall,
-                                                                                            macro_f1_score, results)
+                                                                                            macro_f1_score, results,
+                                                                                            Accuracy,
+                                                                                            Precision, Recall,
+                                                                                            F1_score,
+                                                                                            C1_Recall,
+                                                                                            C1_F1_score, FPR)
         print('The number of features selected is:', n_features)
         a = a + 1
 
@@ -322,7 +334,7 @@ if __name__ == '__main__':
     global hes  # weight for hesitation (uncertainty) degree
     men = 1
     nomen = 1
-    hes = 10
+    hes = 1
 
     # filename = r"data\X-IIOTID\X-IIoTID dataset.csv"
     # GB_num = 100
@@ -336,17 +348,17 @@ if __name__ == '__main__':
     # GB_num = 10
     # feature = 13
 
-    filename = r"data\KDDCUP99\kddcup.data"
-    GB_num = 25
-    feature = 37
+    # filename = r"data\KDDCUP99\kddcup.data"
+    # GB_num = 25
+    # feature = 37
 
     # filename = r"data\UNSW-NB15\UNSW-NB15_full.csv"
     # GB_num = 20
     # feature = 6
 
-    # filename = r"data\NSLKDD\KDDTest+.csv"
-    # GB_num = 400
-    # feature = 23
+    filename = r"data\NSLKDD\KDDTest+.csv"
+    GB_num = 400
+    feature = 23
 
     data_x, data_y, labels_len = datasetload(filename)
 
